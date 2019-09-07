@@ -38,7 +38,7 @@ void AudioCallback(void *user_data, Uint8 *audio, int length) {
             sound_buf = playing[i].sound->samples;
             sound_buf += playing[i].position;
             
-            if ((playing[i].sound + length) > playing[i].sound->length) {
+            if ((playing[i].position + length) > playing[i].sound->length) {
                 sound_len = playing[i].sound->length - playing[i].position;
             } else {
                 sound_len = length;
@@ -52,7 +52,7 @@ void AudioCallback(void *user_data, Uint8 *audio, int length) {
     }
 }
 
-int LoadAndConvertSound(char *filename, SDL_AudioSpec *spec, sound_p sound) {
+int LoadAndConvertSound(const char *filename, SDL_AudioSpec *spec, sound_p sound) {
     SDL_AudioCVT cvt;
     SDL_AudioSpec loaded;
     Uint8 *new_buf;
@@ -120,7 +120,6 @@ int PlaySound(sound_p sound) {
 
 int main(int argc, char **argv)
 {
-    SDL_Window *screen;
     SDL_Event event;
     int quit_flag = 0;
     SDL_AudioSpec desired, obtained;
@@ -134,10 +133,16 @@ int main(int argc, char **argv)
     atexit(SDL_Quit);
     atexit(SDL_CloseAudio);
     
-    screen = SDL_VideoInit(NULL);
-    if (screen == NULL) {
+    if (SDL_VideoInit(NULL) != 0) {
         return 1;
     }
+    
+    SDL_Window *win = SDL_CreateWindow("Hello world!", 100, 100, 640, 480, SDL_WINDOW_SHOWN);
+    if (win == 0) {
+        printf("SDL_createWindow Error: %s\n", SDL_GetError());
+        return 3;
+    }
+    
     desired.freq = 44100;
     desired.format = AUDIO_S16;
     desired.samples = 4096;
@@ -149,16 +154,54 @@ int main(int argc, char **argv)
         return 1;
     }
     
-    if (LoadAndConvertSound("cannon.wav", &obtained, &cannon) != 0) {
+    if (LoadAndConvertSound("untitled.wav", &obtained, &cannon) != 0) {
         printf("Unable to load sound.\n");
         return 1;
     }
     
-    if (LoadAndConvertSound("explosion.wav", &obtained, &cannon) != 0) {
+    if (LoadAndConvertSound("untitled1.wav", &obtained, &explosion) != 0) {
         printf("Unable to load sound.\n");
         return 1;
     }
     
     ClearPlayingSounds();
     SDL_PauseAudio(0);
+    
+    printf("Press 'Q' to quit. C and E play sounds. \n");
+    
+    while (SDL_WaitEvent(&event) != 0 && quit_flag == 0) {
+        SDL_Keysym keysym;
+        
+        switch(event.type) {
+            case SDL_KEYDOWN:
+                keysym = event.key.keysym;
+                if (keysym.sym == SDLK_q) {
+                    printf("'Q' pressed, exiting.\n");
+                    quit_flag = 1;
+                }
+                if (keysym.sym == SDLK_c) {
+                    printf("Firing cannon!\n");
+                    PlaySound(&cannon);
+                }
+                if (keysym.sym == SDLK_e) {
+                    printf("Kaboom!\n");
+                    PlaySound(&explosion);
+                }
+                break;
+            case SDL_QUIT:
+                printf("Quit event.\n");
+                quit_flag = 1;
+        }
+    }
+    
+    SDL_PauseAudio(1);
+    SDL_LockAudio();
+    
+    free(cannon.samples);
+    free(explosion.samples);
+    
+    SDL_UnlockAudio();
+    
+    SDL_DestroyWindow(win);
     return 0;
+}
