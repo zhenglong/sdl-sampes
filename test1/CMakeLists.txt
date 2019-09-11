@@ -10,12 +10,12 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 include_directories("/use/local/include")
 link_directories("/usr/local/lib")
-link_libraries(SDL2 SDL2_image)
+link_libraries(SDL2 SDL2_image sndfile)
 
 set(CMAKE_CXX_FLAGS "-g")
 
 ## Use all the *.cpp files we found under this folder for the project
-FILE(GLOB SRCS "main.cpp")
+FILE(GLOB SRCS "main.c")
 
 ## Define the executable
 add_executable(${PROJECT_NAME} ${SRCS})
