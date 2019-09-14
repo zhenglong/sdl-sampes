@@ -8,8 +8,9 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="src">
-    <File Name="read_audio.c"/>
     <File Name="main.c"/>
+    <File Name="main9.c"/>
+    <File Name="read_audio.c"/>
     <File Name="main8.cpp"/>
     <File Name="main7.cpp"/>
     <File Name="main6.cpp"/>
